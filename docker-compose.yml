@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  # Database
+  db:
+    image: mariadb:latest
+    container_name: ulaps-db
+    volumes:
+      - ulaps_db:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+      - ulaps_network
+
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin:latest
+    container_name: ulaps-phpmyadmin
+    restart: always
+    ports:
+      - '8080:80'
+    environment:
+      # PMA_ARBITRARY: 1
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: password
+    networks:
+      - ulaps_network
+
+  # Wordpress
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    container_name: ulaps-wordpress
+    ports:
+      - '8000:80'
+    restart: always
+    volumes: ['./:/var/www/html']
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    networks:
+      - ulaps_network
+
+volumes:
+  ulaps_db:
+
+networks:
+  ulaps_network:
